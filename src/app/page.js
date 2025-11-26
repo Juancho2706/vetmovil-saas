@@ -21,6 +21,6 @@ export default function Page() {
   // Por ahora, pasamos una función que redirige.
 
   return (
-    <LandingPage onLogin={() => router.push('/login')} />
+    <LandingPage onLogin={(role) => router.push(`/login?role=${role}`)} />
   );
 }

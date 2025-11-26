@@ -63,7 +63,11 @@ export default function DashboardPage() {
             ...p,
             ownerId: p.owner_id,
             ownerName: p.owner_name,
-            lastCheckup: p.last_checkup
+            lastCheckup: p.last_checkup,
+            alerts: p.alerts || [],
+            allergies: p.allergies || [],
+            vaccines: p.vaccines || [],
+            history: p.history || []
         }));
 
         const mappedAppts = (apptsData || []).map(a => ({
@@ -88,7 +92,7 @@ export default function DashboardPage() {
     const handleBookingComplete = async (data) => {
         const newAppt = {
             owner_id: currentUser.id,
-            owner_name: data.ownerName,
+            owner_name: `${data.firstName} ${data.lastName}`,
             owner_rut: data.rut,
             pet_name: data.petName,
             description: data.description,

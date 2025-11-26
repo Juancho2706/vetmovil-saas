@@ -1,3 +1,8 @@
+-- RESET (Optional: Uncomment if you want to start fresh)
+DROP TABLE IF EXISTS appointments CASCADE;
+DROP TABLE IF EXISTS pets CASCADE;
+DROP TABLE IF EXISTS profiles CASCADE;
+
 -- Create Profiles Table (Linked to Auth)
 create table profiles (
   id uuid references auth.users on delete cascade not null primary key,
@@ -21,6 +26,10 @@ create table pets (
   owner_name text,
   image text,
   last_checkup text,
+  alerts text[] default '{}',
+  allergies text[] default '{}',
+  vaccines jsonb default '[]',
+  history jsonb default '[]',
   created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 

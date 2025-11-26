@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { MapPin, CreditCard } from 'lucide-react';
 import { Modal } from '../ui/Modal';
-import { formatCurrency } from '../../utils/format';
+import { formatCurrency, formatRut } from '../../utils/format';
 
 export const BookingWizard = ({ onClose, onComplete, defaultAddress }) => {
     const [step, setStep] = useState(1);
-    const [formData, setFormData] = useState({ ownerName: '', rut: '', petName: '', description: '', address: defaultAddress || '' });
+    const [formData, setFormData] = useState({ firstName: '', lastName: '', rut: '', petName: '', description: '', address: defaultAddress || '' });
     const [loading, setLoading] = useState(false);
 
     const handlePay = () => {
@@ -33,9 +33,10 @@ export const BookingWizard = ({ onClose, onComplete, defaultAddress }) => {
                         </div>
                     </div>
                     <div className="grid grid-cols-2 gap-4">
-                        <div><label className="text-sm font-bold text-slate-700">Tu Nombre</label><input className="w-full border p-2 rounded" value={formData.ownerName} onChange={e => setFormData({ ...formData, ownerName: e.target.value })} /></div>
-                        <div><label className="text-sm font-bold text-slate-700">RUT</label><input className="w-full border p-2 rounded" placeholder="12.345.678-9" value={formData.rut} onChange={e => setFormData({ ...formData, rut: e.target.value })} /></div>
+                        <div><label className="text-sm font-bold text-slate-700">Nombre</label><input className="w-full border p-2 rounded" value={formData.firstName} onChange={e => setFormData({ ...formData, firstName: e.target.value })} /></div>
+                        <div><label className="text-sm font-bold text-slate-700">Apellido</label><input className="w-full border p-2 rounded" value={formData.lastName} onChange={e => setFormData({ ...formData, lastName: e.target.value })} /></div>
                     </div>
+                    <div className="mb-4"><label className="text-sm font-bold text-slate-700">RUT</label><input className="w-full border p-2 rounded" placeholder="12345678-9" value={formData.rut} onChange={e => setFormData({ ...formData, rut: e.target.value })} onBlur={e => setFormData({ ...formData, rut: formatRut(e.target.value) })} /></div>
                     <div><label className="text-sm font-bold text-slate-700">Nombre Mascota</label><input className="w-full border p-2 rounded" value={formData.petName} onChange={e => setFormData({ ...formData, petName: e.target.value })} /></div>
 
                     <div>
