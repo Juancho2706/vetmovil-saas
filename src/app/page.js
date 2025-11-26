@@ -1,56 +1,26 @@
 "use client";
 
-import React, { useState } from 'react';
-import { VetMovilApp } from '../components/VetMovilApp';
+import React from 'react';
+import { useRouter } from 'next/navigation';
 import { LandingPage } from '../components/LandingPage';
-import { INITIAL_PETS, INITIAL_APPOINTMENTS } from '../data/mocks';
 
-export default function VetMovilLanding() {
-  const [currentUser, setCurrentUser] = useState(null);
+export default function Page() {
+  const router = useRouter();
 
-  // Estado global de la App (Mascotas y Citas) para que persista al cambiar de usuario
-  const [pets, setPets] = useState(INITIAL_PETS);
-  const [appointments, setAppointments] = useState(INITIAL_APPOINTMENTS);
-
-  // Handlers Globales
-  const handleBookingComplete = (data) => {
-    // Al crear reserva, asociamos con el ID del usuario actual si es cliente
-    const newAppt = { ...data, ownerId: currentUser?.id };
-    setAppointments([...appointments, newAppt]);
+  const handleLogin = (role) => {
+    // En la Landing real, "Soy Cliente" o "Soy Veterinario" llevan al Login Real
+    router.push('/login');
   };
 
-  const handleAdmit = (newPet, apptId) => {
-    setPets([...pets, newPet]);
-    setAppointments(appointments.filter(a => a.id !== apptId));
-  };
+  // Modificamos la LandingPage para que el botón "Probar Demo" redirija a /demo
+  // Como LandingPage acepta onLogin, podemos interceptarlo o pasarle una prop extra si la modificamos.
+  // Por ahora, usaremos onLogin para redirigir a /login, y agregaremos un botón manual o modificaremos el componente.
 
-  const handleConsultationFinish = (data) => {
-    // Lógica dummy, en realidad se pasaría el petId para actualizar
-    console.log("Consulta finalizada", data);
-  };
+  // Para no modificar LandingPage.js demasiado, envolveremos la navegación.
+  // Pero LandingPage.js usa MOCK_USERS. Vamos a modificar LandingPage.js ligeramente en el siguiente paso para que sea más flexible.
+  // Por ahora, pasamos una función que redirige.
 
-  const handleUpdatePet = (updated) => {
-    setPets(pets.map(p => p.id === updated.id ? updated : p));
-  };
-
-  // Si hay usuario logueado, mostrar la App
-  if (currentUser) {
-    return (
-      <VetMovilApp
-        currentUser={currentUser}
-        onLogout={() => setCurrentUser(null)}
-        pets={pets}
-        appointments={appointments}
-        handleBookingComplete={handleBookingComplete}
-        handleAdmit={handleAdmit}
-        handleConsultationFinish={handleConsultationFinish}
-        handleUpdatePet={handleUpdatePet}
-      />
-    );
-  }
-
-  // Si no, mostrar Landing Page
   return (
-    <LandingPage onLogin={setCurrentUser} />
+    <LandingPage onLogin={() => router.push('/login')} />
   );
 }

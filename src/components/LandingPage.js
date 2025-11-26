@@ -17,8 +17,8 @@ export const LandingPage = ({ onLogin }) => {
                     <a href="#" className="hover:text-teal-600 transition-colors">Testimonios</a>
                 </div>
                 <div className="flex gap-3">
-                    <button onClick={() => onLogin(MOCK_USERS.client)} className="text-slate-600 font-medium text-sm hover:text-teal-700 px-3 py-2">Soy Cliente</button>
-                    <button onClick={() => onLogin(MOCK_USERS.vet)} className="bg-slate-900 text-white px-5 py-2.5 rounded-lg text-sm font-bold hover:bg-black transition-all shadow-lg shadow-slate-200">Soy Veterinario</button>
+                    <button onClick={() => onLogin('client')} className="text-slate-600 font-medium text-sm hover:text-teal-700 px-3 py-2">Soy Cliente</button>
+                    <button onClick={() => onLogin('vet')} className="bg-slate-900 text-white px-5 py-2.5 rounded-lg text-sm font-bold hover:bg-black transition-all shadow-lg shadow-slate-200">Soy Veterinario</button>
                 </div>
             </nav>
 
@@ -33,7 +33,7 @@ export const LandingPage = ({ onLogin }) => {
                         La plataforma todo en uno para veterinarios a domicilio. Historias clínicas, agenda inteligente y cobros automáticos en una sola app.
                     </p>
                     <div className="flex flex-col sm:flex-row gap-4">
-                        <button onClick={() => onLogin(MOCK_USERS.vet)} className="bg-teal-600 text-white px-8 py-4 rounded-xl font-bold text-lg hover:bg-teal-700 transition-all shadow-xl shadow-teal-200 flex items-center justify-center gap-2">
+                        <button onClick={() => window.location.href = '/demo'} className="bg-teal-600 text-white px-8 py-4 rounded-xl font-bold text-lg hover:bg-teal-700 transition-all shadow-xl shadow-teal-200 flex items-center justify-center gap-2">
                             Probar Demo Gratis <ArrowRight className="w-5 h-5" />
                         </button>
                         <button className="px-8 py-4 rounded-xl font-bold text-lg border-2 border-slate-200 text-slate-600 hover:border-slate-300 hover:text-slate-800 transition-all">
@@ -102,7 +102,7 @@ export const LandingPage = ({ onLogin }) => {
                     <div className="absolute top-0 left-0 w-full h-full bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
                     <h2 className="text-3xl md:text-5xl font-bold mb-6 relative z-10">¿Listo para modernizar tu consulta?</h2>
                     <p className="text-slate-400 mb-10 max-w-xl mx-auto relative z-10">Únete a la red de veterinarios más moderna de Latinoamérica.</p>
-                    <button onClick={() => onLogin(MOCK_USERS.vet)} className="bg-teal-500 text-white px-10 py-4 rounded-xl font-bold text-lg hover:bg-teal-400 transition-all shadow-lg shadow-teal-500/30 relative z-10">
+                    <button onClick={() => onLogin('vet')} className="bg-teal-500 text-white px-10 py-4 rounded-xl font-bold text-lg hover:bg-teal-400 transition-all shadow-lg shadow-teal-500/30 relative z-10">
                         Comenzar Ahora
                     </button>
                 </div>
