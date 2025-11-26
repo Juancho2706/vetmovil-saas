@@ -1,16 +1,12 @@
 import React, { useState } from 'react';
-import { MapPin, Sparkles, Loader2, CreditCard } from 'lucide-react';
+import { MapPin, CreditCard } from 'lucide-react';
 import { Modal } from '../ui/Modal';
-import { callGeminiAPI } from '../../services/gemini';
 import { formatCurrency } from '../../utils/format';
 
 export const BookingWizard = ({ onClose, onComplete, defaultAddress }) => {
     const [step, setStep] = useState(1);
     const [formData, setFormData] = useState({ ownerName: '', rut: '', petName: '', description: '', address: defaultAddress || '' });
     const [loading, setLoading] = useState(false);
-    // AI State
-    const [analyzing, setAnalyzing] = useState(false);
-    const [aiAdvice, setAiAdvice] = useState(null);
 
     const handlePay = () => {
         setLoading(true);
@@ -18,21 +14,6 @@ export const BookingWizard = ({ onClose, onComplete, defaultAddress }) => {
             setLoading(false);
             onComplete({ ...formData, id: `new_${Date.now()}`, date: new Date().toLocaleDateString(), status: 'pending_admission', paid: true });
         }, 1500);
-    };
-
-    const handleAnalyzeSymptoms = async () => {
-        if (!formData.description || formData.description.length < 5) return;
-        setAnalyzing(true);
-        const prompt = `Eres un asistente de triaje veterinario virtual. El dueño de una mascota describe los siguientes síntomas: "${formData.description}".
-    Por favor analiza esto y responde brevemente con este formato:
-    1. Nivel de Urgencia estimado (Bajo, Medio, Alto).
-    2. Recomendación inmediata de qué hacer mientras llega el veterinario.
-    3. Una frase empática.
-    No des diagnósticos médicos definitivos, solo orientación de primeros auxilios o manejo.`;
-
-        const response = await callGeminiAPI(prompt);
-        setAiAdvice(response);
-        setAnalyzing(false);
     };
 
     return (
@@ -57,27 +38,11 @@ export const BookingWizard = ({ onClose, onComplete, defaultAddress }) => {
                     </div>
                     <div><label className="text-sm font-bold text-slate-700">Nombre Mascota</label><input className="w-full border p-2 rounded" value={formData.petName} onChange={e => setFormData({ ...formData, petName: e.target.value })} /></div>
 
-                    {/* AI Symptom Checker Section */}
                     <div>
                         <div className="flex justify-between items-center mb-1">
                             <label className="text-sm font-bold text-slate-700">Motivo</label>
-                            <button
-                                onClick={handleAnalyzeSymptoms}
-                                disabled={analyzing || !formData.description}
-                                className="text-xs flex items-center gap-1 bg-purple-100 text-purple-700 px-2 py-1 rounded hover:bg-purple-200 transition-colors disabled:opacity-50"
-                            >
-                                {analyzing ? <Loader2 className="w-3 h-3 animate-spin" /> : <Sparkles className="w-3 h-3" />}
-                                {analyzing ? "Analizando..." : "Analizar con IA"}
-                            </button>
                         </div>
                         <textarea className="w-full border p-2 rounded h-20" placeholder="Síntomas..." value={formData.description} onChange={e => setFormData({ ...formData, description: e.target.value })} />
-
-                        {aiAdvice && (
-                            <div className="mt-3 bg-purple-50 border border-purple-100 p-3 rounded-lg text-sm text-purple-800 animate-fade-in">
-                                <div className="font-bold flex items-center gap-2 mb-1"><Sparkles className="w-4 h-4 text-purple-600" /> Asistente de Triaje (Gemini)</div>
-                                <div className="whitespace-pre-wrap text-xs leading-relaxed">{aiAdvice}</div>
-                            </div>
-                        )}
                     </div>
 
                     <button disabled={!formData.address || !formData.petName} onClick={() => setStep(2)} className="w-full bg-slate-900 text-white py-3 rounded-lg font-bold hover:bg-black disabled:opacity-50">Continuar al Pago</button>

@@ -1,6 +1,7 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import {
-    Stethoscope, LogOut, Clock, CheckCircle, MapPin, UserPlus, Users, ChevronRight, Dog, ArrowRight, X, Move
+    Stethoscope, LogOut, Clock, CheckCircle, MapPin, UserPlus, Users, ChevronRight, Dog, ArrowRight, X, Move, Calendar
 } from 'lucide-react';
 import { PetDetailView } from './features/PetDetailView';
 import { ConsultationFlow } from './features/ConsultationFlow';
