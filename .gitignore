@@ -42,3 +42,4 @@ next-env.d.ts
 supabase_schema.sql
 supabase_seed.sql
 supabase_schema.sql
+DOCUMENTACION_TECNICA.md

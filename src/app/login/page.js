@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, Suspense } from 'react';
-import { supabase } from '../../lib/supabase';
+import { supabase, checkSupabaseConfig } from '../../lib/supabase';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Stethoscope, ArrowRight, Loader2, Lock, AlertTriangle } from 'lucide-react';
 
@@ -14,6 +14,13 @@ function LoginContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const expectedRole = searchParams.get('role'); // 'vet' or 'client'
+
+    useEffect(() => {
+        const config = checkSupabaseConfig();
+        if (!config.valid) {
+            setMessage({ type: 'error', text: config.message });
+        }
+    }, []);
 
     const roleLabels = {
         vet: 'Veterinarios',
@@ -39,7 +46,13 @@ function LoginContent() {
             });
 
             if (error) {
-                setMessage({ type: 'error', text: error.message });
+                let errorMsg = error.message;
+                if (error.message === 'Failed to fetch') {
+                    errorMsg = 'Error de conexión. Verifica tu internet o la configuración de Supabase.';
+                } else if (error.message === 'Invalid login credentials') {
+                    errorMsg = 'Credenciales incorrectas. Verifica tu correo y contraseña.';
+                }
+                setMessage({ type: 'error', text: errorMsg });
             } else {
                 // Validar Rol
                 if (expectedRole) {

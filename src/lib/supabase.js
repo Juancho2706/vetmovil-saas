@@ -11,3 +11,13 @@ export const supabase = createClient(
     supabaseUrl || 'https://placeholder.supabase.co',
     supabaseAnonKey || 'placeholder'
 );
+
+export const checkSupabaseConfig = () => {
+    if (!supabaseUrl || !supabaseAnonKey) {
+        return {
+            valid: false,
+            message: 'Faltan las credenciales de Supabase en .env.local'
+        };
+    }
+    return { valid: true };
+};
