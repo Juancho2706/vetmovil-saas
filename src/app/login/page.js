@@ -5,6 +5,7 @@ import { supabase, checkSupabaseConfig } from '../../lib/supabase';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Stethoscope, ArrowRight, Loader2, Lock, AlertTriangle } from 'lucide-react';
 
+
 function LoginContent() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -12,8 +13,6 @@ function LoginContent() {
     const [message, setMessage] = useState(null);
     const [mode, setMode] = useState('magic');
     const router = useRouter();
-    const searchParams = useSearchParams();
-    const expectedRole = searchParams.get('role'); // 'vet' or 'client'
 
     useEffect(() => {
         const config = checkSupabaseConfig();
@@ -21,11 +20,6 @@ function LoginContent() {
             setMessage({ type: 'error', text: config.message });
         }
     }, []);
-
-    const roleLabels = {
-        vet: 'Veterinarios',
-        client: 'Clientes'
-    };
 
     const handleLogin = async (e) => {
         e.preventDefault();
@@ -54,24 +48,8 @@ function LoginContent() {
                 }
                 setMessage({ type: 'error', text: errorMsg });
             } else {
-                // Validar Rol
-                if (expectedRole) {
-                    const { data: profile } = await supabase
-                        .from('profiles')
-                        .select('role')
-                        .eq('id', data.user.id)
-                        .single();
-
-                    if (profile && profile.role !== expectedRole) {
-                        await supabase.auth.signOut();
-                        setMessage({
-                            type: 'error',
-                            text: `Acceso denegado. Esta cuenta es de ${profile.role === 'vet' ? 'Veterinario' : 'Cliente'}, pero estás intentando ingresar como ${roleLabels[expectedRole]}.`
-                        });
-                        setLoading(false);
-                        return;
-                    }
-                }
+                // En el modelo B2B, asumimos que quien se loguea aquí es un Vet.
+                // Podríamos validar role 'vet' si es estricto, pero por ahora permitimos el paso a dashboard.
                 router.push('/dashboard');
             }
         }
@@ -84,18 +62,9 @@ function LoginContent() {
                 <div className="flex justify-center mb-6">
                     <div className="bg-teal-600 p-3 rounded-xl text-white shadow-lg shadow-teal-200"><Stethoscope className="w-8 h-8" /></div>
                 </div>
-                <h1 className="text-2xl font-bold text-center text-slate-900 mb-2">Bienvenido a VetMovil</h1>
-
-                {expectedRole && (
-                    <div className="flex justify-center mb-4">
-                        <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide ${expectedRole === 'vet' ? 'bg-slate-900 text-white' : 'bg-teal-100 text-teal-800'}`}>
-                            Acceso {roleLabels[expectedRole]}
-                        </span>
-                    </div>
-                )}
-
+                <h1 className="text-2xl font-bold text-center text-slate-900 mb-2">Acceso Profesionales</h1>
                 <p className="text-center text-slate-500 mb-8">
-                    {mode === 'magic' ? 'Ingresa tu correo para acceder sin contraseña.' : 'Ingresa tus credenciales.'}
+                    Gestión clínica inteligente para veterinarios modernos.
                 </p>
 
                 <div className="flex bg-slate-100 p-1 rounded-lg mb-6">
@@ -103,14 +72,25 @@ function LoginContent() {
                     <button onClick={() => setMode('password')} className={`flex-1 py-2 text-sm font-bold rounded-md transition-all ${mode === 'password' ? 'bg-white shadow text-slate-900' : 'text-slate-500 hover:text-slate-700'}`}>Contraseña</button>
                 </div>
 
+                {/* DEMO HINT */}
+                <div className="mb-6 bg-blue-50 p-3 rounded-lg border border-blue-100 text-xs text-blue-800">
+                    <p className="font-bold flex items-center gap-1 mb-1"><AlertTriangle className="w-3 h-3" /> Credenciales Demo:</p>
+                    <div className="flex justify-between items-center bg-white p-2 rounded border border-blue-100 mb-1">
+                        <code className="text-slate-600">dr.prueba@vetmovil.com</code>
+                    </div>
+                    <div className="flex justify-between items-center bg-white p-2 rounded border border-blue-100">
+                        <code className="text-slate-600">password123</code>
+                    </div>
+                </div>
+
                 <form onSubmit={handleLogin} className="space-y-4">
                     <div>
-                        <label className="block text-sm font-bold text-slate-700 mb-1">Correo Electrónico</label>
+                        <label className="block text-sm font-bold text-slate-700 mb-1">Correo Profesional</label>
                         <input
                             type="email"
                             required
                             className="w-full border border-slate-300 p-3 rounded-xl focus:ring-2 focus:ring-teal-500 outline-none transition-all"
-                            placeholder="nombre@ejemplo.com"
+                            placeholder="doctor@vetmovil.com"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                         />
@@ -135,7 +115,7 @@ function LoginContent() {
                         disabled={loading}
                         className="w-full bg-slate-900 text-white py-3 rounded-xl font-bold hover:bg-black transition-all shadow-lg flex justify-center items-center gap-2 disabled:opacity-70"
                     >
-                        {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <>{mode === 'magic' ? 'Enviar Enlace' : 'Iniciar Sesión'} <ArrowRight className="w-4 h-4" /></>}
+                        {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <>{mode === 'magic' ? 'Enviar Enlace de Acceso' : 'Iniciar Sesión'} <ArrowRight className="w-4 h-4" /></>}
                     </button>
                 </form>
 

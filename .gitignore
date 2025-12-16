@@ -43,3 +43,4 @@ supabase_schema.sql
 supabase_seed.sql
 supabase_schema.sql
 DOCUMENTACION_TECNICA.md
+demo_data.sql

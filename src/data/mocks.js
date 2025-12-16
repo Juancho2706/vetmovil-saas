@@ -88,7 +88,46 @@ export const INITIAL_APPOINTMENTS = [
     }
 ];
 
+
 export const MOCK_USERS = {
     vet: { id: 'vet-001', name: 'Dr. Alejandro Martínez', role: 'vet', slug: 'dr-alejandro' },
     client: { id: 'client-001', name: 'Sofía Rodríguez', role: 'client', address: 'Av. Las Condes 1234' }
 };
+
+export const VET_AVAILABILITY = {
+    workDays: [1, 2, 3, 4, 5], // Mon-Fri
+    startHour: 9,
+    endHour: 18,
+    slotDuration: 60, // minutes
+    bufferTime: 30 // minutes travel
+};
+
+export const CLINICAL_TEMPLATES = [
+    {
+        id: 'tmpl_01',
+        name: 'Control Sano',
+        reason: 'Control Preventivo',
+        subjective: 'Paciente acude a control preventivo anual. Propietario reporta estado de ánimo normal, apetito conservado y deposiciones normales.',
+        objective: 'Mucosas rosadas, tiempo de llenado capilar < 2s. Ganglios no palpables. Auscultación cardíaca y pulmonar sin particularidades. Peso estable.',
+        assessment: 'Paciente clínicamente sano.',
+        plan: 'Se administra vacunación anual según calendario. Próximo control en 1 año.'
+    },
+    {
+        id: 'tmpl_02',
+        name: 'Problema Piel',
+        reason: 'Consulta Dermatológica',
+        subjective: 'Propietario reporta prurito intenso en zona dorsolumbar hace 3 días. Se lame constantemente.',
+        objective: 'Alopecia focal en zona dorsal, eritema moderado y presencia de pústulas. Presencia de heces de pulga.',
+        assessment: 'Dermatitis Alérgica por Picadura de Pulga (DAPP).',
+        plan: '1. Desparasitación externa (Simparica/Nexgard).\n2. Corticoides orales por 5 días.\n3. Baño sanitario.\nControl en 7 días.'
+    },
+    {
+        id: 'tmpl_03',
+        name: 'Gastroentérico',
+        reason: 'Vómitos/Diarrea',
+        subjective: 'Presenta vómitos de contenido alimenticio (2 en 24h) y diarrea pastosa. Ánimo decaído.',
+        objective: 'Dolor abdominal leve a la palpación. Deshidratación 5%. T° 38.9°C.',
+        assessment: 'Gastroenteritis aguda inespecífica.',
+        plan: '1. Ayuno de sólidos 12h.\n2. Omeprazol 1mg/kg cada 24h.\n3. Probióticos 1 sobre al día.\n4. Dieta blanda posterior al ayuno.'
+    }
+];

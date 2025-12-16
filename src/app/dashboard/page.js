@@ -151,8 +151,11 @@ export default function DashboardPage() {
 
     if (!currentUser) return null;
 
+    const viewMode = currentUser.role === 'vet' ? 'vet_dashboard' : 'client_dashboard';
+
     return (
         <VetMovilApp
+            viewMode={viewMode}
             currentUser={currentUser}
             onLogout={handleLogout}
             pets={pets}

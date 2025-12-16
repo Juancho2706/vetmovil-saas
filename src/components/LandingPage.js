@@ -17,8 +17,7 @@ export const LandingPage = ({ onLogin }) => {
                     <a href="#" className="hover:text-teal-600 transition-colors">Testimonios</a>
                 </div>
                 <div className="flex gap-3">
-                    <button onClick={() => onLogin('client')} className="text-slate-600 font-medium text-sm hover:text-teal-700 px-3 py-2">Soy Cliente</button>
-                    <button onClick={() => onLogin('vet')} className="bg-slate-900 text-white px-5 py-2.5 rounded-lg text-sm font-bold hover:bg-black transition-all shadow-lg shadow-slate-200">Soy Veterinario</button>
+                    <button onClick={() => onLogin('vet')} className="bg-slate-900 text-white px-5 py-2.5 rounded-lg text-sm font-bold hover:bg-black transition-all shadow-lg shadow-slate-200">Iniciar Sesión</button>
                 </div>
             </nav>
 

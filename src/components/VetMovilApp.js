@@ -1,179 +1,203 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import {
-    Stethoscope, LogOut, Clock, CheckCircle, MapPin, UserPlus, Users, ChevronRight, Dog, ArrowRight, X, Move, Calendar
+    Stethoscope, LogOut, Clock, CheckCircle, MapPin, UserPlus, Users, ChevronRight, Dog, ArrowRight, X, Move, Calendar, Globe, Link as LinkIcon, Settings, Share
 } from 'lucide-react';
 import { PetDetailView } from './features/PetDetailView';
 import { ConsultationFlow } from './features/ConsultationFlow';
 import { BookingWizard } from './features/BookingWizard';
 import { AdmissionModal } from './features/AdmissionModal';
 
-export const VetMovilApp = ({ currentUser, onLogout, pets, appointments, handleBookingComplete, handleAdmit, handleConsultationFinish, handleUpdatePet }) => {
+// Separate components for better organization could be done, but keeping in one file for now as requested
+const PublicProfile = ({ vetName, onBook }) => (
+    <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-4 animate-fade-in">
+        <div className="max-w-md w-full bg-white rounded-3xl shadow-xl overflow-hidden">
+            <div className="bg-slate-900 h-32 relative">
+                <div className="absolute -bottom-12 left-1/2 -translate-x-1/2">
+                    <div className="w-24 h-24 bg-white rounded-full p-2 shadow-lg">
+                        <div className="w-full h-full bg-teal-100 rounded-full flex items-center justify-center text-3xl">👨‍⚕️</div>
+                    </div>
+                </div>
+            </div>
+            <div className="pt-16 pb-8 px-8 text-center">
+                <h1 className="text-2xl font-bold text-slate-800">{vetName}</h1>
+                <p className="text-teal-600 font-medium text-sm mb-4">Veterinario a Domicilio • Santiago</p>
+                <div className="flex gap-2 justify-center mb-8">
+                    <span className="bg-slate-100 text-slate-600 px-3 py-1 rounded-full text-xs font-bold">🐶 Perros</span>
+                    <span className="bg-slate-100 text-slate-600 px-3 py-1 rounded-full text-xs font-bold">🐱 Gatos</span>
+                    <span className="bg-slate-100 text-slate-600 px-3 py-1 rounded-full text-xs font-bold">🐰 Exóticos</span>
+                </div>
+
+                <h3 className="font-bold text-slate-700 text-sm mb-2 text-left">Sobre mi</h3>
+                <p className="text-slate-500 text-sm text-left mb-8 leading-relaxed">
+                    Especialista en medicina preventiva y urgencias básicas. Llevo la clínica a la comodidad de tu hogar para reducir el estrés de tus mascotas.
+                </p>
+
+                <button onClick={onBook} className="w-full bg-slate-900 text-white py-4 rounded-xl font-bold text-lg shadow-xl shadow-slate-300 hover:bg-black transition-transform hover:scale-[1.02] flex justify-center items-center gap-2">
+                    <Calendar className="w-5 h-5" /> Agendar Visita
+                </button>
+            </div>
+        </div>
+        <p className="mt-8 text-xs text-slate-400 flex items-center gap-1">
+            <Globe className="w-3 h-3" /> Powered by <span className="font-bold">VetMovil</span>
+        </p>
+    </div>
+);
+
+export const VetMovilApp = ({ viewMode, currentUser, onLogout, pets, appointments, handleBookingComplete, handleAdmit, handleConsultationFinish, handleUpdatePet, onUpdateProfile }) => {
+    // viewMode: 'vet_dashboard' | 'client_dashboard' | 'public_profile'
+
     const [view, setView] = useState('list');
     const [selectedPet, setSelectedPet] = useState(null);
     const [selectedAppointment, setSelectedAppointment] = useState(null);
     const [showBookingWizard, setShowBookingWizard] = useState(false);
     const [showAdmissionModal, setShowAdmissionModal] = useState(false);
 
+    // Settings State
+    const [profileForm, setProfileForm] = useState({ name: '', address: '', slug: '' });
+
+    useEffect(() => {
+        if (currentUser) {
+            setProfileForm({
+                name: currentUser.name || '',
+                address: currentUser.address || '',
+                slug: currentUser.id || '' // Default slug to ID for now if not present
+            });
+        }
+    }, [currentUser]);
+
     // Handlers para navegación interna
     const goToDetail = (pet) => { setSelectedPet(pet); setView('detail'); };
     const goToConsultation = () => { setView('consultation'); };
     const goBack = () => { setView('list'); setSelectedPet(null); };
 
-    // ANTIGRAVITY EFFECT LOGIC
-    const [antigravityEnabled, setAntigravityEnabled] = useState(false);
-    const [engine, setEngine] = useState(null);
-    const [render, setRender] = useState(null);
-    const [runner, setRunner] = useState(null);
-
-    // Referencia al contenedor principal para clonar
-    const containerRef = useRef(null);
-
-    // Función para activar la antigravedad
-    const toggleAntigravity = () => {
-        if (antigravityEnabled) {
-            // Desactivar y recargar (simple reload para limpiar)
-            window.location.reload();
-            return;
+    const saveProfile = () => {
+        if (onUpdateProfile) {
+            onUpdateProfile({ ...currentUser, ...profileForm });
         }
-
-        setAntigravityEnabled(true);
-
-        // Cargar Matter.js dinámicamente si no existe
-        if (!window.Matter) {
-            const script = document.createElement('script');
-            script.src = 'https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js';
-            script.onload = initPhysics;
-            document.body.appendChild(script);
-        } else {
-            initPhysics();
-        }
+        alert('Perfil actualizado (Simulado)');
+        setView('list');
     };
 
-    const initPhysics = () => {
-        const Matter = window.Matter;
-        if (!Matter) return;
-
-        const Engine = Matter.Engine,
-            Render = Matter.Render,
-            Runner = Matter.Runner,
-            Bodies = Matter.Bodies,
-            Composite = Matter.Composite,
-            Mouse = Matter.Mouse,
-            MouseConstraint = Matter.MouseConstraint,
-            Common = Matter.Common;
-
-        // Crear motor
-        const newEngine = Engine.create();
-        setEngine(newEngine);
-
-        // Crear renderer
-        const newRender = Render.create({
-            element: document.body,
-            engine: newEngine,
-            options: {
-                width: window.innerWidth,
-                height: window.innerHeight,
-                wireframes: false,
-                background: '#f1f5f9' // Slate-100
-            }
-        });
-        setRender(newRender);
-
-        // Recolectar elementos del DOM para "físicalizarlos"
-        const elementsToPhysics = document.querySelectorAll('button, .bg-white, h1, h2, p, nav, .rounded-xl');
-        const bodies = [];
-
-        elementsToPhysics.forEach(el => {
-            const rect = el.getBoundingClientRect();
-            // Evitar elementos muy grandes o fuera de pantalla
-            if (rect.width > 0 && rect.height > 0 && rect.top >= 0) {
-
-                // Crear textura visual (canvas screenshot simple o color plano)
-                // Para simplificar en este demo, usaremos rectangulos de colores
-                // En una implementación real usaríamos html2canvas
-
-                const color = window.getComputedStyle(el).backgroundColor;
-                const isTransparent = color === 'rgba(0, 0, 0, 0)' || color === 'transparent';
-
-                const body = Bodies.rectangle(
-                    rect.left + rect.width / 2,
-                    rect.top + rect.height / 2,
-                    rect.width,
-                    rect.height,
-                    {
-                        render: {
-                            fillStyle: isTransparent ? '#334155' : color, // Color fallback
-                            strokeStyle: '#cbd5e1',
-                            lineWidth: 1
-                        },
-                        restitution: 0.5 // Rebote
-                    }
-                );
-                bodies.push(body);
-
-                // Ocultar elemento original
-                el.style.visibility = 'hidden';
-            }
-        });
-
-        // Agregar paredes (Suelo, techo, lados)
-        const wallOptions = { isStatic: true, render: { fillStyle: '#cbd5e1' } };
-        const ground = Bodies.rectangle(window.innerWidth / 2, window.innerHeight + 50, window.innerWidth, 100, wallOptions);
-        const ceiling = Bodies.rectangle(window.innerWidth / 2, -50, window.innerWidth, 100, wallOptions);
-        const leftWall = Bodies.rectangle(-50, window.innerHeight / 2, 100, window.innerHeight, wallOptions);
-        const rightWall = Bodies.rectangle(window.innerWidth + 50, window.innerHeight / 2, 100, window.innerHeight, wallOptions);
-
-        Composite.add(newEngine.world, [...bodies, ground, ceiling, leftWall, rightWall]);
-
-        // Agregar control con mouse
-        const mouse = Mouse.create(newRender.canvas);
-        const mouseConstraint = MouseConstraint.create(newEngine, {
-            mouse: mouse,
-            constraint: {
-                stiffness: 0.2,
-                render: {
-                    visible: false
-                }
-            }
-        });
-        Composite.add(newEngine.world, mouseConstraint);
-        newRender.mouse = mouse;
-
-        // Iniciar
-        Render.run(newRender);
-        const newRunner = Runner.create();
-        setRunner(newRunner);
-        Runner.run(newRunner, newEngine);
-    };
-
-    // Limpieza al desmontar
-    useEffect(() => {
-        return () => {
-            if (render) {
-                const Matter = window.Matter;
-                if (Matter) {
-                    Matter.Render.stop(render);
-                    if (runner) Matter.Runner.stop(runner);
-                    if (render.canvas) render.canvas.remove();
-                }
-            }
-        };
-    }, []);
-
+    // Common Layout or Specific Layout based on mode
+    if (viewMode === 'public_profile') {
+        return (
+            <>
+                <PublicProfile vetName="Dr. Alejandro Martínez" onBook={() => setShowBookingWizard(true)} />
+                {showBookingWizard && <BookingWizard onClose={() => setShowBookingWizard(false)} onComplete={(data) => { setShowBookingWizard(false); handleBookingComplete(data); alert('✅ Cita solicitada con éxito. Te hemos enviado un link de seguimiento a tu correo.'); }} />}
+            </>
+        );
+    }
 
     return (
-        <div ref={containerRef} className="min-h-screen bg-slate-50 font-sans text-slate-800">
+        <div className="min-h-screen bg-slate-50 font-sans text-slate-800">
+            {/* NAV BAR */}
             <nav className="bg-white px-6 h-16 flex items-center justify-between border-b border-slate-200 sticky top-0 z-20 shadow-sm">
-                <div className="font-bold flex items-center gap-2 text-lg"><div className="bg-teal-600 p-1.5 rounded-lg text-white"><Stethoscope className="w-4 h-4" /></div>VetMovil {currentUser.role === 'vet' && <span className="bg-slate-900 text-white text-[10px] px-2 py-0.5 rounded uppercase tracking-wider">PRO</span>}</div>
-                <div className="flex items-center gap-4"><span className="text-sm font-medium hidden md:block">{currentUser.name}</span><button onClick={onLogout} className="p-2 hover:bg-red-50 hover:text-red-500 rounded-full transition-colors"><LogOut className="w-5 h-5" /></button></div>
+                <div className="font-bold flex items-center gap-2 text-lg">
+                    <div className="bg-teal-600 p-1.5 rounded-lg text-white"><Stethoscope className="w-4 h-4" /></div>
+                    VetMovil
+                    {viewMode === 'vet_dashboard' && <span className="bg-slate-900 text-white text-[10px] px-2 py-0.5 rounded uppercase tracking-wider">PRO</span>}
+                </div>
+                <div className="flex items-center gap-4">
+                    <span className="text-sm font-medium hidden md:block">{currentUser?.name}</span>
+
+                    {viewMode === 'vet_dashboard' && (
+                        <button onClick={() => setView('settings')} className="p-2 hover:bg-slate-100 rounded-full transition-colors text-slate-400 hover:text-slate-600" title="Configuración">
+                            <Settings className="w-5 h-5" />
+                        </button>
+                    )}
+
+                    <button onClick={onLogout} className="p-2 hover:bg-slate-100 rounded-full transition-colors text-slate-400 hover:text-slate-600">
+                        {viewMode === 'client_dashboard' ? 'Salir' : <LogOut className="w-5 h-5" />}
+                    </button>
+                </div>
             </nav>
 
             <main className="max-w-5xl mx-auto p-4 md:p-6">
 
-                {/* VISTA VETERINARIO: DASHBOARD */}
-                {currentUser.role === 'vet' && view === 'list' && (
+                {/* --- SETTINGS VIEW --- */}
+                {view === 'settings' && viewMode === 'vet_dashboard' && (
+                    <div className="max-w-xl mx-auto animate-fade-in">
+                        <div className="flex items-center gap-2 mb-6">
+                            <button onClick={goBack} className="p-2 hover:bg-slate-100 rounded-full"><ArrowRight className="w-5 h-5 rotate-180" /></button>
+                            <h2 className="text-2xl font-bold text-slate-800">Configuración de Perfil</h2>
+                        </div>
+
+                        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-6">
+                            <div>
+                                <label className="block text-sm font-bold text-slate-700 mb-2">Nombre Público</label>
+                                <input
+                                    value={profileForm.name}
+                                    onChange={e => setProfileForm({ ...profileForm, name: e.target.value })}
+                                    className="w-full border border-slate-300 p-3 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none"
+                                />
+                                <p className="text-xs text-slate-400 mt-1">Así te verán tus clientes.</p>
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-bold text-slate-700 mb-2">Dirección / Consulta</label>
+                                <input
+                                    value={profileForm.address}
+                                    onChange={e => setProfileForm({ ...profileForm, address: e.target.value })}
+                                    className="w-full border border-slate-300 p-3 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-bold text-slate-700 mb-2">Tu Enlace Público</label>
+                                <div className="flex items-center gap-2 bg-slate-50 p-3 rounded-lg border border-slate-200 text-slate-500">
+                                    <Globe className="w-4 h-4" />
+                                    <span className="text-sm">vetmovil.com/u/</span>
+                                    <span className="font-bold text-slate-700 truncate">{profileForm.slug}</span>
+                                </div>
+                                <p className="text-xs text-slate-400 mt-1">Comparte este link para que agenden contigo.</p>
+                            </div>
+
+                            <hr className="border-slate-100" />
+
+                            <button onClick={saveProfile} className="w-full bg-slate-900 text-white py-3 rounded-xl font-bold hover:bg-black transition-colors">
+                                Guardar Cambios
+                            </button>
+                        </div>
+                    </div>
+                )}
+
+                {/* --- VET DASHBOARD --- */}
+                {viewMode === 'vet_dashboard' && view === 'list' && (
                     <div className="space-y-8 animate-fade-in">
+
+                        {/* SHARE CARD BANNER */}
+                        <div className="bg-gradient-to-r from-slate-900 to-slate-800 text-white p-6 rounded-2xl shadow-lg flex flex-col md:flex-row items-center justify-between gap-6">
+                            <div className="flex-1">
+                                <h2 className="text-xl font-bold mb-2 flex items-center gap-2">🚀 Tu Consultorio Online está activo</h2>
+                                <p className="text-slate-300 text-sm mb-4">Comparte este enlace para que tus clientes agenden contigo automáticamente.</p>
+
+                                <div className="flex items-center gap-2 bg-slate-900/50 p-1.5 pl-4 rounded-xl border border-slate-700 max-w-md">
+                                    <Globe className="w-4 h-4 text-teal-400 flex-shrink-0" />
+                                    <span className="text-sm font-mono text-teal-100 truncate flex-1">{window.location.host}/u/{currentUser?.id}</span>
+                                    <button
+                                        onClick={() => {
+                                            navigator.clipboard.writeText(`${window.location.host}/u/${currentUser?.id}`);
+                                            alert('Enlace copiado al portapapeles 📋');
+                                        }}
+                                        className="bg-white text-slate-900 px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-teal-50 transition-colors flex items-center gap-1"
+                                    >
+                                        <LinkIcon className="w-3 h-3" /> Copiar
+                                    </button>
+                                </div>
+                            </div>
+                            <div className="flex gap-3">
+                                <button
+                                    onClick={() => window.open(`https://wa.me/?text=Hola!%20Agenda%20tu%20hora%20conmigo%20aquí:%20${window.location.host}/u/${currentUser?.id}`, '_blank')}
+                                    className="bg-green-500 hover:bg-green-600 text-white p-3 rounded-xl transition-colors flex items-center gap-2 font-bold text-sm shadow-lg shadow-green-900/20"
+                                >
+                                    <span className="text-lg">💬</span> WhatsApp
+                                </button>
+                                <button className="bg-white/10 hover:bg-white/20 text-white p-3 rounded-xl transition-colors flex items-center justify-center">
+                                    <Share className="w-5 h-5" />
+                                </button>
+                            </div>
+                        </div>
+
                         <div>
                             <h2 className="font-bold text-lg mb-4 flex items-center gap-2 text-slate-700"><div className="bg-orange-100 p-1.5 rounded text-orange-600"><Clock className="w-4 h-4" /></div> Solicitudes Pendientes ({appointments.length})</h2>
                             {appointments.length === 0 ? <div className="text-slate-400 text-sm italic border-l-4 border-slate-200 pl-3">No hay solicitudes nuevas por ahora.</div> : (
@@ -207,25 +231,28 @@ export const VetMovilApp = ({ currentUser, onLogout, pets, appointments, handleB
                     </div>
                 )}
 
-                {/* VISTA CLIENTE: HOME */}
-                {currentUser.role === 'client' && view === 'list' && (
+                {/* --- CLIENT DASHBOARD (MAGIC LINK VIEW) --- */}
+                {viewMode === 'client_dashboard' && view === 'list' && (
                     <div className="animate-fade-in">
-                        <div className="bg-gradient-to-br from-teal-600 to-teal-800 text-white p-8 rounded-3xl mb-8 shadow-xl text-center relative overflow-hidden">
-                            <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-16 -mt-16 blur-3xl"></div>
-                            <h2 className="text-3xl font-bold mb-2 relative z-10">Hola, {currentUser.name.split(' ')[0]}</h2>
-                            <p className="opacity-90 text-sm mb-8 relative z-10 max-w-md mx-auto">Tus mascotas merecen la mejor atención sin salir de casa. Agenda tu visita ahora.</p>
-                            <button onClick={() => setShowBookingWizard(true)} className="bg-white text-teal-900 px-8 py-3 rounded-xl font-bold text-sm shadow-lg hover:bg-teal-50 transition-transform hover:scale-105 flex items-center gap-2 mx-auto relative z-10"><Calendar className="w-4 h-4" /> Agendar Nueva Cita</button>
+                        <div className="bg-teal-900 text-white p-6 rounded-3xl mb-8 shadow-xl flex items-center justify-between">
+                            <div>
+                                <h2 className="text-xl font-bold mb-1">Tu Portal de Mascotas</h2>
+                                <p className="text-teal-200 text-sm">Acceso seguro vía Magic Link</p>
+                            </div>
+                            <div className="bg-white/10 p-3 rounded-full"><LinkIcon className="w-6 h-6 text-teal-200" /></div>
                         </div>
 
-                        {/* SOLICITUDES PENDIENTES (CLIENTE) */}
+                        {/* SOLICITUDES PENDIENTES */}
                         {appointments.filter(a => a.ownerId === currentUser.id).length > 0 && (
                             <div className="mb-6 animate-fade-in">
-                                <h3 className="font-bold text-slate-800 mb-4 flex items-center gap-2 text-orange-600"><Clock className="w-5 h-5" /> Solicitudes Enviadas</h3>
+                                <h3 className="font-bold text-slate-800 mb-4 flex items-center gap-2 text-orange-600"><Clock className="w-5 h-5" /> Tus Próximas Visitas</h3>
                                 <div className="grid gap-3">
                                     {appointments.filter(a => a.ownerId === currentUser.id).map(a => (
-                                        <div key={a.id} className="bg-orange-50 border border-orange-200 p-4 rounded-xl flex gap-4 items-center">
-                                            <div className="bg-white p-2 rounded-full border border-orange-100"><Clock className="w-6 h-6 text-orange-500 animate-pulse" /></div>
-                                            <div><p className="font-bold text-slate-800">Cita para {a.petName}</p><p className="text-xs text-slate-500">Estado: Esperando confirmación del veterinario</p></div>
+                                        <div key={a.id} className="bg-white border border-orange-200 p-4 rounded-xl flex gap-4 items-center shadow-sm">
+                                            <div className="bg-orange-50 p-3 rounded-full text-orange-500 font-bold flex-col flex items-center leading-none text-xs w-14 h-14 justify-center">
+                                                <span>25</span><span>MAY</span>
+                                            </div>
+                                            <div><p className="font-bold text-slate-800">Visita para {a.petName}</p><p className="text-xs text-slate-500">Estado: Esperando confirmación</p></div>
                                         </div>
                                     ))}
                                 </div>
@@ -233,16 +260,16 @@ export const VetMovilApp = ({ currentUser, onLogout, pets, appointments, handleB
                         )}
 
                         <div className="mb-4">
-                            <h3 className="font-bold text-slate-800 mb-4 flex items-center gap-2"><Dog className="w-5 h-5" /> Mis Mascotas Registradas</h3>
+                            <h3 className="font-bold text-slate-800 mb-4 flex items-center gap-2"><Dog className="w-5 h-5" /> Tus Mascotas</h3>
                             {pets.filter(p => p.ownerId === currentUser.id).length === 0 ? (
                                 <p className="text-slate-400 text-sm">Aún no tienes mascotas registradas.</p>
                             ) : (
                                 <div className="grid gap-3">
                                     {pets.filter(p => p.ownerId === currentUser.id).map(p => (
-                                        <div key={p.id} onClick={() => goToDetail(p)} className="bg-white p-4 border rounded-xl flex gap-4 cursor-pointer hover:shadow-md transition-shadow">
-                                            <span className="text-3xl bg-slate-50 p-2 rounded-full">{p.image}</span>
-                                            <div className="flex-1"><p className="font-bold text-slate-800">{p.name}</p><p className="text-xs text-slate-500">Última visita: {p.lastCheckup}</p></div>
-                                            <ArrowRight className="text-slate-300 self-center" />
+                                        <div key={p.id} onClick={() => goToDetail(p)} className="bg-white p-4 border rounded-xl flex gap-4 cursor-pointer hover:shadow-md transition-shadow items-center">
+                                            <span className="text-4xl bg-slate-50 p-2 rounded-2xl">{p.image}</span>
+                                            <div className="flex-1"><p className="font-bold text-slate-800">{p.name}</p><p className="text-xs text-slate-500">{p.breed}</p></div>
+                                            <div className="text-xs bg-slate-100 text-slate-600 px-3 py-1 rounded-full font-bold">Ver Ficha</div>
                                         </div>
                                     ))}
                                 </div>
@@ -251,17 +278,18 @@ export const VetMovilApp = ({ currentUser, onLogout, pets, appointments, handleB
                     </div>
                 )}
 
+                {/* SHARED DETAIL VIEWS */}
                 {view === 'detail' && (
                     <PetDetailView
                         pet={selectedPet}
-                        role={currentUser.role}
+                        role={viewMode === 'vet_dashboard' ? 'vet' : 'client'}
                         onBack={goBack}
                         onStartConsultation={goToConsultation}
                         onUpdatePet={handleUpdatePet}
                     />
                 )}
 
-                {view === 'consultation' && currentUser.role === 'vet' && (
+                {view === 'consultation' && viewMode === 'vet_dashboard' && (
                     <ConsultationFlow
                         pet={selectedPet}
                         onFinish={(data) => { handleConsultationFinish(data); goBack(); }}
@@ -269,21 +297,9 @@ export const VetMovilApp = ({ currentUser, onLogout, pets, appointments, handleB
                     />
                 )}
 
-                {showBookingWizard && <BookingWizard defaultAddress={currentUser.role === 'client' ? currentUser.address : ''} onClose={() => setShowBookingWizard(false)} onComplete={handleBookingComplete} />}
                 {showAdmissionModal && selectedAppointment && <AdmissionModal appointment={selectedAppointment} onClose={() => setShowAdmissionModal(false)} onAdmit={handleAdmit} />}
 
             </main>
-
-            {/* Botón de Antigravedad Secreto (Pie de página) */}
-            <footer className="fixed bottom-2 right-2 opacity-50 hover:opacity-100 transition-opacity">
-                <button
-                    onClick={toggleAntigravity}
-                    className={`p-2 rounded-full shadow-lg border ${antigravityEnabled ? 'bg-red-500 text-white border-red-600' : 'bg-slate-800 text-white border-slate-900'}`}
-                    title="Activar Modo Gravedad Cero"
-                >
-                    {antigravityEnabled ? <X className="w-4 h-4" /> : <Move className="w-4 h-4" />}
-                </button>
-            </footer>
         </div>
     );
 };
